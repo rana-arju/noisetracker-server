@@ -31,7 +31,8 @@ app.set('trust proxy', 1);
 
 // Security headers (should be first)
 app.use(securityHeaders);
-
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 // Request logging for security events
 app.use(securityLogger);
 
