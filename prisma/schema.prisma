@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String     @id @default(auto()) @map("_id") @db.ObjectId
+  employeeId        String     @unique
+  name              String?
+  email             String?    @unique
+  phone             String?
+  password          String
+  role              Role       @default(EMPLOYEE)
+  isActive          Boolean    @default(true)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  status            UserStatus @default(ACTIVE)
+
+  reportsCreated    Report[]   @relation("Reporter")
+  comments          Comment[]
+  votes             ReportVote[]
+
+  @@map("users")
+}
+
+model Report {
+  id                   String        @id @default(auto()) @map("_id") @db.ObjectId
+  reportedEmployeeName String
+  reportedEmployeeId   String?       // The employeeId of the person being reported
+  description          String?
+  severity             Severity      @default(MEDIUM)
+  status               ReportStatus  @default(PENDING)
+  
+  createdById          String        @db.ObjectId
+  createdBy            User          @relation("Reporter", fields: [createdById], references: [id])
+  
+  comments             Comment[]
+  votes                ReportVote[]
+
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  @@map("reports")
+}
+
+model Comment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  reportId  String   @db.ObjectId
+  report    Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("comments")
+}
+
+model ReportVote {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  reportId  String   @db.ObjectId
+  report    Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  voteType  VoteType
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([reportId, userId])
+  @@map("report_votes")
+}
+
+enum Role {
+  SUPERADMIN
+  ADMIN
+  EMPLOYEE
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ReportStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum VoteType {
+  UPVOTE
+  DOWNVOTE
+}
+
