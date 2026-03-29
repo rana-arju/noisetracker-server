@@ -8,13 +8,14 @@ import prisma from '../../lib/prisma';
 
 interface IEmployeeRow {
   employeeId: string;
+  name: string;
   password?: string;
-  name?: string;
   email?: string;
   phone?: string;
+  designation?: string;
 }
 
-const bulkUploadEmployees = async (filePath: string, fileType: string) => {
+const getBulkUploadPreview = async (filePath: string, fileType: string) => {
   let rows: any[] = [];
 
   if (fileType === 'csv') {
@@ -31,19 +32,25 @@ const bulkUploadEmployees = async (filePath: string, fileType: string) => {
     rows = XLSX.utils.sheet_to_json(worksheet);
   }
 
-  let totalRows = rows.length;
-  let insertedRows = 0;
-  let skippedRows = 0;
-  let invalidRows = 0;
-  const details: any[] = [];
+  const previewData: any[] = [];
+  let summary = {
+    total: rows.length,
+    new: 0,
+    existing: 0,
+    invalid: 0,
+  };
 
   for (const row of rows) {
-    const { employeeId, password, name, email, phone } = row as IEmployeeRow;
+    const { employeeId, name, password, email, phone, designation } = row as IEmployeeRow;
 
-    // Basic validation
-    if (!employeeId || !password) {
-      invalidRows++;
-      details.push({ employeeId: employeeId || 'N/A', status: 'INVALID', message: 'Missing employeeId or password' });
+    // Validation: employeeId and name required
+    if (!employeeId || !name) {
+      summary.invalid++;
+      previewData.push({
+        ...row,
+        status: 'INVALID',
+        message: 'Missing employeeId or name',
+      });
       continue;
     }
 
@@ -55,51 +62,84 @@ const bulkUploadEmployees = async (filePath: string, fileType: string) => {
     });
 
     if (existingUser) {
-      skippedRows++;
-      details.push({ employeeId: strEmployeeId, status: 'SKIPPED', message: 'Duplicate employeeId' });
-      continue;
+      summary.existing++;
+      previewData.push({
+        ...row,
+        status: 'EXISTING',
+        message: 'Employee ID already exists',
+      });
+    } else {
+      summary.new++;
+      previewData.push({
+        ...row,
+        status: 'NEW',
+      });
     }
+  }
+
+  // Cleanup file after preview (optional, but good for security)
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+  }
+
+  return {
+    summary,
+    previewData,
+  };
+};
+
+const confirmBulkUpload = async (users: IEmployeeRow[]) => {
+  const result = {
+    inserted: 0,
+    failed: 0,
+    details: [] as any[],
+  };
+
+  for (const user of users) {
+    const { employeeId, name, password, email, phone, designation } = user;
 
     try {
-      const hashedPassword = await bcrypt.hash(String(password), Number(config.bcrypt_salt_rounds));
+      // Final existence check before insertion
+      const existingUser = await prisma.user.findUnique({
+        where: { employeeId: String(employeeId).trim() },
+      });
+
+      if (existingUser) {
+        result.failed++;
+        result.details.push({ employeeId, status: 'FAILED', message: 'Already exists' });
+        continue;
+      }
+
+      // Use provided password or default to employeeId if missing
+      const passToHash = password ? String(password) : String(employeeId);
+      const hashedPassword = await bcrypt.hash(passToHash, Number(config.bcrypt_salt_rounds));
 
       await prisma.user.create({
         data: {
-          employeeId: strEmployeeId,
+          employeeId: String(employeeId).trim(),
           password: hashedPassword,
           name: name ? String(name).trim() : null,
           email: email ? String(email).trim() : null,
           phone: phone ? String(phone).trim() : null,
+          designation: designation ? String(designation).trim() : null,
           role: Role.EMPLOYEE,
           status: UserStatus.ACTIVE,
           isActive: true,
         },
       });
 
-      insertedRows++;
-      details.push({ employeeId: strEmployeeId, status: 'INSERTED' });
+      result.inserted++;
+      result.details.push({ employeeId, status: 'INSERTED' });
     } catch (error: any) {
-      invalidRows++;
-      details.push({ employeeId: strEmployeeId, status: 'FAILED', message: error.message });
+      result.failed++;
+      result.details.push({ employeeId, status: 'FAILED', message: error.message });
     }
   }
 
-  // Cleanup file
-  if (fs.existsSync(filePath)) {
-    fs.unlinkSync(filePath);
-  }
-
-  return {
-    summary: {
-      totalRows,
-      insertedRows,
-      skippedRows,
-      invalidRows,
-    },
-    details,
-  };
+  return result;
 };
 
 export const UsersBulkService = {
-  bulkUploadEmployees,
+  getBulkUploadPreview,
+  confirmBulkUpload,
 };

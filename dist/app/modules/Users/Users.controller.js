@@ -72,18 +72,40 @@ const getMyProfile = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
         data: result,
     });
 }));
-const bulkUploadEmployees = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const previewBulkUpload = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     if (!req.file) {
         throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Please upload a file');
     }
     const filePath = req.file.path;
     const fileExtension = (_a = req.file.originalname.split('.').pop()) === null || _a === void 0 ? void 0 : _a.toLowerCase();
-    const result = yield Users_bulk_service_1.UsersBulkService.bulkUploadEmployees(filePath, fileExtension === 'csv' ? 'csv' : 'excel');
+    const result = yield Users_bulk_service_1.UsersBulkService.getBulkUploadPreview(filePath, fileExtension === 'csv' ? 'csv' : 'excel');
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Bulk upload preview generated',
+        data: result,
+    });
+}));
+const confirmBulkUpload = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { users } = req.body;
+    if (!users || !Array.isArray(users)) {
+        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'User data is required and must be an array');
+    }
+    const result = yield Users_bulk_service_1.UsersBulkService.confirmBulkUpload(users);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
         message: 'Bulk upload completed',
+        data: result,
+    });
+}));
+const createUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield Users_services_1.UsersService.createUserInDB(req.body);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'User created successfully',
         data: result,
     });
 }));
@@ -93,5 +115,7 @@ exports.UsersController = {
     updateUserInfo,
     deleteUser,
     getMyProfile,
-    bulkUploadEmployees,
+    previewBulkUpload,
+    confirmBulkUpload,
+    createUser,
 };

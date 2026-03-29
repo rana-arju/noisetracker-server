@@ -18,6 +18,7 @@ model User {
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
   status            UserStatus @default(ACTIVE)
+  designation       String?
 
   reportsCreated    Report[]   @relation("Reporter")
   comments          Comment[]

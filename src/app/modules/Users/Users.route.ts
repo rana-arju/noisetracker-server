@@ -11,11 +11,17 @@ router.get('/me', auth(Role.EMPLOYEE, Role.ADMIN, Role.SUPERADMIN), UsersControl
 // Admin routes
 router.get('/', auth(Role.ADMIN, Role.SUPERADMIN), UsersController.getAllUsers);
 router.post(
-  '/upload',
+  '/preview-upload',
   auth(Role.ADMIN, Role.SUPERADMIN),
   fileUploader.excelUpload,
-  UsersController.bulkUploadEmployees
+  UsersController.previewBulkUpload
 );
+router.post(
+  '/confirm-upload',
+  auth(Role.ADMIN, Role.SUPERADMIN),
+  UsersController.confirmBulkUpload
+);
+router.post('/', auth(Role.ADMIN, Role.SUPERADMIN), UsersController.createUser);
 router.get('/:id', auth(Role.ADMIN, Role.SUPERADMIN), UsersController.getSingleUser);
 router.patch('/:id', auth(Role.ADMIN, Role.SUPERADMIN), UsersController.updateUserInfo);
 router.delete('/:id', auth(Role.ADMIN, Role.SUPERADMIN), UsersController.deleteUser);

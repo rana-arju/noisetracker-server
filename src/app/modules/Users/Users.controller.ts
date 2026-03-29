@@ -70,7 +70,7 @@ const getMyProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const bulkUploadEmployees = catchAsync(async (req: Request, res: Response) => {
+const previewBulkUpload = catchAsync(async (req: Request, res: Response) => {
   if (!req.file) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Please upload a file');
   }
@@ -78,7 +78,7 @@ const bulkUploadEmployees = catchAsync(async (req: Request, res: Response) => {
   const filePath = req.file.path;
   const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase();
   
-  const result = await UsersBulkService.bulkUploadEmployees(
+  const result = await UsersBulkService.getBulkUploadPreview(
     filePath,
     fileExtension === 'csv' ? 'csv' : 'excel'
   );
@@ -86,7 +86,35 @@ const bulkUploadEmployees = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
+    message: 'Bulk upload preview generated',
+    data: result,
+  });
+});
+
+const confirmBulkUpload = catchAsync(async (req: Request, res: Response) => {
+  const { users } = req.body;
+
+  if (!users || !Array.isArray(users)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'User data is required and must be an array');
+  }
+
+  const result = await UsersBulkService.confirmBulkUpload(users);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
     message: 'Bulk upload completed',
+    data: result,
+  });
+});
+
+const createUser = catchAsync(async (req: Request, res: Response) => {
+  const result = await UsersService.createUserInDB(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User created successfully',
     data: result,
   });
 });
@@ -97,5 +125,7 @@ export const UsersController = {
   updateUserInfo,
   deleteUser,
   getMyProfile,
-  bulkUploadEmployees,
+  previewBulkUpload,
+  confirmBulkUpload,
+  createUser,
 };

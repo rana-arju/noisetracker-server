@@ -70,6 +70,10 @@ const upload = (0, multer_1.default)({
             'video/quicktime',
             'audio/mpeg',
             'audio/wav',
+            'text/csv',
+            'application/csv',
+            'application/x-csv',
+            'text/x-csv',
         ];
         if (allowedMimeTypes.includes(file.mimetype)) {
             cb(null, true);

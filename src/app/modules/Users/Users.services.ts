@@ -4,6 +4,8 @@ import { Prisma, Role, UserStatus } from '@prisma/client';
 import type { IPaginationOptions } from '../../interface/pagination.type';
 import { paginationHelper } from '../../helpers/paginationHelper';
 import ApiError from '../../errors/ApiError';
+import * as bcrypt from 'bcrypt';
+import config from '../../../config';
 
 const getAllUsersFromDB = async (filters: any, options: IPaginationOptions) => {
   const { page, limit, skip } = paginationHelper.calculatePagination(options);
@@ -48,6 +50,7 @@ const getAllUsersFromDB = async (filters: any, options: IPaginationOptions) => {
       role: true,
       status: true,
       isActive: true,
+      designation: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -82,6 +85,7 @@ const getSingleUserFromDB = async (id: string) => {
       role: true,
       status: true,
       isActive: true,
+      designation: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -115,6 +119,7 @@ const updateUserInfoIntoDB = async (id: string, payload: any) => {
       role: true,
       status: true,
       isActive: true,
+      designation: true,
     },
   });
 
@@ -149,6 +154,7 @@ const getMyProfileFromDB = async (userId: string) => {
       role: true,
       status: true,
       isActive: true,
+      designation: true,
       createdAt: true,
     },
   });
@@ -160,10 +166,51 @@ const getMyProfileFromDB = async (userId: string) => {
   return user;
 };
 
+const createUserInDB = async (payload: any) => {
+  const isUserExist = await prisma.user.findUnique({
+    where: {
+      employeeId: payload.employeeId,
+    },
+  });
+
+  if (isUserExist) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'User already exists with this employee ID');
+  }
+
+  // Set default password as employeeId if not provided
+  const password = payload.password || payload.employeeId;
+  const hashedPassword = await bcrypt.hash(
+    password,
+    Number(config.bcrypt_salt_rounds)
+  );
+
+  const result = await prisma.user.create({
+    data: {
+      ...payload,
+      password: hashedPassword,
+    },
+    select: {
+      id: true,
+      employeeId: true,
+      name: true,
+      email: true,
+      phone: true,
+      role: true,
+      status: true,
+      isActive: true,
+      designation: true,
+      createdAt: true,
+    },
+  });
+
+  return result;
+};
+
 export const UsersService = {
   getAllUsersFromDB,
   getSingleUserFromDB,
   updateUserInfoIntoDB,
   deleteUserFromDB,
   getMyProfileFromDB,
+  createUserInDB,
 };
