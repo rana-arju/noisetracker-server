@@ -11,6 +11,8 @@ const Users_controller_1 = require("./Users.controller");
 const multerFileUpload_1 = require("../../middlewares/multerFileUpload");
 const router = express_1.default.Router();
 router.get('/me', (0, auth_1.default)(client_1.Role.EMPLOYEE, client_1.Role.ADMIN, client_1.Role.SUPERADMIN), Users_controller_1.UsersController.getMyProfile);
+// Public search — any authenticated user can search for users to report
+router.get('/search', (0, auth_1.default)(client_1.Role.EMPLOYEE, client_1.Role.ADMIN, client_1.Role.SUPERADMIN), Users_controller_1.UsersController.searchUsers);
 // Admin routes
 router.get('/', (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.SUPERADMIN), Users_controller_1.UsersController.getAllUsers);
 router.post('/preview-upload', (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.SUPERADMIN), multerFileUpload_1.fileUploader.excelUpload, Users_controller_1.UsersController.previewBulkUpload);

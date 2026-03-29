@@ -206,6 +206,34 @@ const createUserInDB = async (payload: any) => {
   return result;
 };
 
+// Public search — returns minimal info for all authenticated users
+const searchUsersFromDB = async (search: string) => {
+  const whereCondition: Prisma.UserWhereInput = search
+    ? {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { employeeId: { contains: search, mode: 'insensitive' } },
+        ],
+        isActive: true,
+      }
+    : { isActive: true };
+
+  const result = await prisma.user.findMany({
+    where: whereCondition,
+    take: 100,
+    orderBy: { name: 'asc' },
+    select: {
+      id: true,
+      employeeId: true,
+      name: true,
+      role: true,
+      designation: true,
+    },
+  });
+
+  return result;
+};
+
 export const UsersService = {
   getAllUsersFromDB,
   getSingleUserFromDB,
@@ -213,4 +241,5 @@ export const UsersService = {
   deleteUserFromDB,
   getMyProfileFromDB,
   createUserInDB,
+  searchUsersFromDB,
 };

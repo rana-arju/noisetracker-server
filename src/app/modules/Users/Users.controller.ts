@@ -119,6 +119,18 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const searchUsers = catchAsync(async (req: Request, res: Response) => {
+  const search = (req.query.search as string) || '';
+  const result = await UsersService.searchUsersFromDB(search);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Users fetched successfully',
+    data: result,
+  });
+});
+
 export const UsersController = {
   getAllUsers,
   getSingleUser,
@@ -128,4 +140,5 @@ export const UsersController = {
   previewBulkUpload,
   confirmBulkUpload,
   createUser,
+  searchUsers,
 };

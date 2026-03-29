@@ -8,6 +8,9 @@ const router = express.Router();
 
 router.get('/me', auth(Role.EMPLOYEE, Role.ADMIN, Role.SUPERADMIN), UsersController.getMyProfile);
 
+// Public search — any authenticated user can search for users to report
+router.get('/search', auth(Role.EMPLOYEE, Role.ADMIN, Role.SUPERADMIN), UsersController.searchUsers);
+
 // Admin routes
 router.get('/', auth(Role.ADMIN, Role.SUPERADMIN), UsersController.getAllUsers);
 router.post(

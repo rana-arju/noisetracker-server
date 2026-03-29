@@ -74,9 +74,16 @@ const getLeaderboard = (filters) => __awaiter(void 0, void 0, void 0, function* 
         data: leaderboard,
     };
 });
-const getEmployeePublicProfile = (employeeId) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield prisma_1.default.user.findUnique({
-        where: { employeeId },
+const getEmployeePublicProfile = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    // Check if it's a valid MongoDB ObjectId (24 char hex)
+    const isObjectId = /^[0-9a-fA-F]{24}$/.test(id);
+    const user = yield prisma_1.default.user.findFirst({
+        where: {
+            OR: [
+                ...(isObjectId ? [{ id }] : []),
+                { employeeId: id },
+            ],
+        },
         select: {
             id: true,
             employeeId: true,
@@ -90,7 +97,7 @@ const getEmployeePublicProfile = (employeeId) => __awaiter(void 0, void 0, void 
     // Lifetime reports against this employee
     const reports = yield prisma_1.default.report.findMany({
         where: {
-            reportedEmployeeId: employeeId,
+            reportedEmployeeId: user.id,
             status: 'APPROVED',
         },
         select: {

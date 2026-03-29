@@ -109,6 +109,16 @@ const createUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
         data: result,
     });
 }));
+const searchUsers = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const search = req.query.search || '';
+    const result = yield Users_services_1.UsersService.searchUsersFromDB(search);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Users fetched successfully',
+        data: result,
+    });
+}));
 exports.UsersController = {
     getAllUsers,
     getSingleUser,
@@ -118,4 +128,5 @@ exports.UsersController = {
     previewBulkUpload,
     confirmBulkUpload,
     createUser,
+    searchUsers,
 };

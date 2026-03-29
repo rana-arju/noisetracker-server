@@ -69,9 +69,17 @@ const getLeaderboard = async (filters: LeaderboardFilters) => {
   };
 };
 
-const getEmployeePublicProfile = async (employeeId: string) => {
-  const user = await prisma.user.findUnique({
-    where: { employeeId },
+const getEmployeePublicProfile = async (id: string) => {
+  // Check if it's a valid MongoDB ObjectId (24 char hex)
+  const isObjectId = /^[0-9a-fA-F]{24}$/.test(id);
+
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        ...(isObjectId ? [{ id }] : []),
+        { employeeId: id },
+      ],
+    },
     select: {
       id: true,
       employeeId: true,
@@ -86,7 +94,7 @@ const getEmployeePublicProfile = async (employeeId: string) => {
   // Lifetime reports against this employee
   const reports = await prisma.report.findMany({
     where: {
-      reportedEmployeeId: employeeId,
+      reportedEmployeeId: user.id,
       status: 'APPROVED',
     },
     select: {
