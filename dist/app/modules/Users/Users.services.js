@@ -48,6 +48,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersService = void 0;
 const http_status_1 = __importDefault(require("http-status"));
 const prisma_1 = __importDefault(require("../../lib/prisma"));
+const client_1 = require("@prisma/client");
 const paginationHelper_1 = require("../../helpers/paginationHelper");
 const ApiError_1 = __importDefault(require("../../errors/ApiError"));
 const bcrypt = __importStar(require("bcrypt"));
@@ -79,19 +80,7 @@ const getAllUsersFromDB = (filters, options) => __awaiter(void 0, void 0, void 0
         orderBy: options.sortBy && options.sortOrder
             ? { [options.sortBy]: options.sortOrder }
             : { createdAt: 'desc' },
-        select: {
-            id: true,
-            employeeId: true,
-            name: true,
-            email: true,
-            phone: true,
-            role: true,
-            status: true,
-            isActive: true,
-            designation: true,
-            createdAt: true,
-            updatedAt: true,
-        },
+        select: Object.assign(Object.assign({ id: true, employeeId: true, name: true, email: true, phone: true, role: true, status: true, isActive: true }, (client_1.Prisma.UserScalarFieldEnum.designation ? { designation: true } : {})), { createdAt: true, updatedAt: true }),
     });
     const total = yield prisma_1.default.user.count({
         where: whereConditions,
@@ -111,19 +100,7 @@ const getAllUsersFromDB = (filters, options) => __awaiter(void 0, void 0, void 0
 const getSingleUserFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield prisma_1.default.user.findUnique({
         where: { id },
-        select: {
-            id: true,
-            employeeId: true,
-            name: true,
-            email: true,
-            phone: true,
-            role: true,
-            status: true,
-            isActive: true,
-            designation: true,
-            createdAt: true,
-            updatedAt: true,
-        },
+        select: Object.assign(Object.assign({ id: true, employeeId: true, name: true, email: true, phone: true, role: true, status: true, isActive: true }, (client_1.Prisma.UserScalarFieldEnum.designation ? { designation: true } : {})), { createdAt: true, updatedAt: true }),
     });
     if (!user) {
         throw new ApiError_1.default(http_status_1.default.NOT_FOUND, 'User not found');
@@ -140,17 +117,7 @@ const updateUserInfoIntoDB = (id, payload) => __awaiter(void 0, void 0, void 0, 
     const result = yield prisma_1.default.user.update({
         where: { id },
         data: payload,
-        select: {
-            id: true,
-            employeeId: true,
-            name: true,
-            email: true,
-            phone: true,
-            role: true,
-            status: true,
-            isActive: true,
-            designation: true,
-        },
+        select: Object.assign({ id: true, employeeId: true, name: true, email: true, phone: true, role: true, status: true, isActive: true }, (client_1.Prisma.UserScalarFieldEnum.designation ? { designation: true } : {})),
     });
     return result;
 });
@@ -169,18 +136,7 @@ const deleteUserFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () 
 const getMyProfileFromDB = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield prisma_1.default.user.findUnique({
         where: { id: userId },
-        select: {
-            id: true,
-            employeeId: true,
-            name: true,
-            email: true,
-            phone: true,
-            role: true,
-            status: true,
-            isActive: true,
-            designation: true,
-            createdAt: true,
-        },
+        select: Object.assign(Object.assign({ id: true, employeeId: true, name: true, email: true, phone: true, role: true, status: true, isActive: true }, (client_1.Prisma.UserScalarFieldEnum.designation ? { designation: true } : {})), { createdAt: true }),
     });
     if (!user) {
         throw new ApiError_1.default(http_status_1.default.NOT_FOUND, 'User not found');
@@ -201,18 +157,7 @@ const createUserInDB = (payload) => __awaiter(void 0, void 0, void 0, function* 
     const hashedPassword = yield bcrypt.hash(password, Number(config_1.default.bcrypt_salt_rounds));
     const result = yield prisma_1.default.user.create({
         data: Object.assign(Object.assign({}, payload), { password: hashedPassword }),
-        select: {
-            id: true,
-            employeeId: true,
-            name: true,
-            email: true,
-            phone: true,
-            role: true,
-            status: true,
-            isActive: true,
-            designation: true,
-            createdAt: true,
-        },
+        select: Object.assign(Object.assign({ id: true, employeeId: true, name: true, email: true, phone: true, role: true, status: true, isActive: true }, (client_1.Prisma.UserScalarFieldEnum.designation ? { designation: true } : {})), { createdAt: true }),
     });
     return result;
 });
@@ -231,13 +176,7 @@ const searchUsersFromDB = (search) => __awaiter(void 0, void 0, void 0, function
         where: whereCondition,
         take: 100,
         orderBy: { name: 'asc' },
-        select: {
-            id: true,
-            employeeId: true,
-            name: true,
-            role: true,
-            designation: true,
-        },
+        select: Object.assign({ id: true, employeeId: true, name: true, role: true }, (client_1.Prisma.UserScalarFieldEnum.designation ? { designation: true } : {})),
     });
     return result;
 });

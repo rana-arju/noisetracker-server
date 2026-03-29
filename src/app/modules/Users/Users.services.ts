@@ -50,7 +50,7 @@ const getAllUsersFromDB = async (filters: any, options: IPaginationOptions) => {
       role: true,
       status: true,
       isActive: true,
-      designation: true,
+      ...((Prisma as any).UserScalarFieldEnum.designation ? { designation: true } : {}),
       createdAt: true,
       updatedAt: true,
     },
@@ -85,7 +85,7 @@ const getSingleUserFromDB = async (id: string) => {
       role: true,
       status: true,
       isActive: true,
-      designation: true,
+      ...((Prisma as any).UserScalarFieldEnum.designation ? { designation: true } : {}),
       createdAt: true,
       updatedAt: true,
     },
@@ -119,7 +119,7 @@ const updateUserInfoIntoDB = async (id: string, payload: any) => {
       role: true,
       status: true,
       isActive: true,
-      designation: true,
+      ...((Prisma as any).UserScalarFieldEnum.designation ? { designation: true } : {}),
     },
   });
 
@@ -154,7 +154,7 @@ const getMyProfileFromDB = async (userId: string) => {
       role: true,
       status: true,
       isActive: true,
-      designation: true,
+      ...((Prisma as any).UserScalarFieldEnum.designation ? { designation: true } : {}),
       createdAt: true,
     },
   });
@@ -198,7 +198,7 @@ const createUserInDB = async (payload: any) => {
       role: true,
       status: true,
       isActive: true,
-      designation: true,
+      ...((Prisma as any).UserScalarFieldEnum.designation ? { designation: true } : {}),
       createdAt: true,
     },
   });
@@ -227,7 +227,7 @@ const searchUsersFromDB = async (search: string) => {
       employeeId: true,
       name: true,
       role: true,
-      designation: true,
+      ...((Prisma as any).UserScalarFieldEnum.designation ? { designation: true } : {}),
     },
   });
 
