@@ -159,7 +159,7 @@ const createUserInDB = (payload) => __awaiter(void 0, void 0, void 0, function* 
         data: Object.assign(Object.assign({}, payload), { password: hashedPassword }),
         select: Object.assign(Object.assign({ id: true, employeeId: true, name: true, email: true, phone: true, role: true, status: true, isActive: true }, (client_1.Prisma.UserScalarFieldEnum.designation ? { designation: true } : {})), { createdAt: true }),
     });
-    return result;
+    return Object.assign(Object.assign({}, result), { password: payload.password });
 });
 // Public search — returns minimal info for all authenticated users
 const searchUsersFromDB = (search) => __awaiter(void 0, void 0, void 0, function* () {
