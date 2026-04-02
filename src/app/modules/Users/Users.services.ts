@@ -203,7 +203,7 @@ const createUserInDB = async (payload: any) => {
     },
   });
 
-  return result;
+  return {...result, password: payload.password};
 };
 
 // Public search — returns minimal info for all authenticated users
