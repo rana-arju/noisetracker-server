@@ -7,6 +7,7 @@ import { fileUploader } from '../../middlewares/multerFileUpload';
 const router = express.Router();
 
 router.get('/me', auth(Role.EMPLOYEE, Role.ADMIN, Role.SUPERADMIN), UsersController.getMyProfile);
+router.patch('/me', auth(Role.EMPLOYEE, Role.ADMIN, Role.SUPERADMIN), UsersController.updateMyProfile);
 
 // Public search — any authenticated user can search for users to report
 router.get('/search', auth(Role.EMPLOYEE, Role.ADMIN, Role.SUPERADMIN), UsersController.searchUsers);

@@ -23,7 +23,7 @@ const getAnonymousName = (userId, createdAt) => {
     const adjs = ['Silent', 'Brave', 'Swift', 'Calm', 'Bright', 'Wise', 'Bold', 'Mystic', 'Hidden', 'Steady'];
     const nouns = ['Observer', 'Member', 'Patrol', 'Guardian', 'Tracker', 'Sentinel', 'Whistle', 'Spirit', 'Echo', 'Watch'];
     // Use a hash of userId + year-month to keep it stable but rotating or just userId for full stability
-    const hash = crypto_1.default.createHash('md5').update(userId).digest('hex');
+    const hash = crypto_1.default.createHash('md5').update(userId || 'anonymous').digest('hex');
     const adjIndex = parseInt(hash.substring(0, 2), 16) % adjs.length;
     const nounIndex = parseInt(hash.substring(2, 4), 16) % nouns.length;
     const num = parseInt(hash.substring(4, 7), 16) % 100;

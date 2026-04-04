@@ -53,6 +53,7 @@ const auth = (...roles) => {
                 role: user.role,
                 name: user.name,
                 email: user.email,
+                phone: user.phone,
             };
             if (roles.length && !roles.includes(user.role)) {
                 throw new ApiError_1.default(http_status_1.default.FORBIDDEN, "Forbidden! You are not authorized!");

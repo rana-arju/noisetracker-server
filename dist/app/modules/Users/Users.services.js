@@ -41,6 +41,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -77,9 +88,7 @@ const getAllUsersFromDB = (filters, options) => __awaiter(void 0, void 0, void 0
         where: whereConditions,
         skip,
         take: limit,
-        orderBy: options.sortBy && options.sortOrder
-            ? { [options.sortBy]: options.sortOrder }
-            : { createdAt: 'desc' },
+        orderBy: options.sortBy && options.sortOrder ? { [options.sortBy]: options.sortOrder } : { createdAt: 'desc' },
         select: Object.assign(Object.assign({ id: true, employeeId: true, name: true, email: true, phone: true, role: true, status: true, isActive: true }, (client_1.Prisma.UserScalarFieldEnum.designation ? { designation: true } : {})), { createdAt: true, updatedAt: true }),
     });
     const total = yield prisma_1.default.user.count({
@@ -98,6 +107,7 @@ const getAllUsersFromDB = (filters, options) => __awaiter(void 0, void 0, void 0
     };
 });
 const getSingleUserFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('Fetching single user...');
     const user = yield prisma_1.default.user.findUnique({
         where: { id },
         select: Object.assign(Object.assign({ id: true, employeeId: true, name: true, email: true, phone: true, role: true, status: true, isActive: true }, (client_1.Prisma.UserScalarFieldEnum.designation ? { designation: true } : {})), { createdAt: true, updatedAt: true }),
@@ -108,6 +118,7 @@ const getSingleUserFromDB = (id) => __awaiter(void 0, void 0, void 0, function* 
     return user;
 });
 const updateUserInfoIntoDB = (id, payload) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('update user');
     const existingUser = yield prisma_1.default.user.findUnique({
         where: { id },
     });
@@ -134,6 +145,7 @@ const deleteUserFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () 
     return result;
 });
 const getMyProfileFromDB = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('my profile');
     const user = yield prisma_1.default.user.findUnique({
         where: { id: userId },
         select: Object.assign(Object.assign({ id: true, employeeId: true, name: true, email: true, phone: true, role: true, status: true, isActive: true }, (client_1.Prisma.UserScalarFieldEnum.designation ? { designation: true } : {})), { createdAt: true }),
@@ -180,6 +192,19 @@ const searchUsersFromDB = (search) => __awaiter(void 0, void 0, void 0, function
     });
     return result;
 });
+const updateMyProfileFromDB = (userId, payload) => __awaiter(void 0, void 0, void 0, function* () {
+    const { password } = payload, otherData = __rest(payload, ["password"]);
+    const updateData = Object.assign({}, otherData);
+    if (password) {
+        updateData.password = yield bcrypt.hash(password, Number(config_1.default.bcrypt_salt_rounds));
+    }
+    const result = yield prisma_1.default.user.update({
+        where: { id: userId },
+        data: updateData,
+        select: Object.assign({ id: true, employeeId: true, name: true, email: true, phone: true, role: true, status: true, isActive: true }, (client_1.Prisma.UserScalarFieldEnum.designation ? { designation: true } : {})),
+    });
+    return result;
+});
 exports.UsersService = {
     getAllUsersFromDB,
     getSingleUserFromDB,
@@ -188,4 +213,5 @@ exports.UsersService = {
     getMyProfileFromDB,
     createUserInDB,
     searchUsersFromDB,
+    updateMyProfileFromDB,
 };

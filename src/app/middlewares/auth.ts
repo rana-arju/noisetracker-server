@@ -57,6 +57,7 @@ const auth = (...roles: string[]) => {
         role: user.role,
         name: user.name,
         email: user.email,
+        phone: user.phone,
       };
 
       if (roles.length && !roles.includes(user.role)) {

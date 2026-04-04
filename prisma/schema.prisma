@@ -35,8 +35,8 @@ model Report {
   severity             Severity      @default(MEDIUM)
   status               ReportStatus  @default(PENDING)
   
-  createdById          String        @db.ObjectId
-  createdBy            User          @relation("Reporter", fields: [createdById], references: [id])
+  createdById          String?       @db.ObjectId
+  createdBy            User?         @relation("Reporter", fields: [createdById], references: [id])
   
   comments             Comment[]
   votes                ReportVote[]

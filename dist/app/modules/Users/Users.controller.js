@@ -101,6 +101,7 @@ const confirmBulkUpload = (0, catchAsync_1.default)((req, res) => __awaiter(void
     });
 }));
 const createUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('afasdf heloadf');
     const result = yield Users_services_1.UsersService.createUserInDB(req.body);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
@@ -119,12 +120,23 @@ const searchUsers = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
         data: result,
     });
 }));
+const updateMyProfile = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const result = yield Users_services_1.UsersService.updateMyProfileFromDB(user.id, req.body);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Profile updated successfully',
+        data: result,
+    });
+}));
 exports.UsersController = {
     getAllUsers,
     getSingleUser,
     updateUserInfo,
     deleteUser,
     getMyProfile,
+    updateMyProfile,
     previewBulkUpload,
     confirmBulkUpload,
     createUser,

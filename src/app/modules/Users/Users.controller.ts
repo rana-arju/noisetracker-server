@@ -77,11 +77,8 @@ const previewBulkUpload = catchAsync(async (req: Request, res: Response) => {
 
   const filePath = req.file.path;
   const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase();
-  
-  const result = await UsersBulkService.getBulkUploadPreview(
-    filePath,
-    fileExtension === 'csv' ? 'csv' : 'excel'
-  );
+
+  const result = await UsersBulkService.getBulkUploadPreview(filePath, fileExtension === 'csv' ? 'csv' : 'excel');
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -109,6 +106,8 @@ const confirmBulkUpload = catchAsync(async (req: Request, res: Response) => {
 });
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
+  console.log('afasdf heloadf');
+
   const result = await UsersService.createUserInDB(req.body);
 
   sendResponse(res, {
@@ -131,12 +130,25 @@ const searchUsers = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateMyProfile = catchAsync(async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  const result = await UsersService.updateMyProfileFromDB(user.id, req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Profile updated successfully',
+    data: result,
+  });
+});
+
 export const UsersController = {
   getAllUsers,
   getSingleUser,
   updateUserInfo,
   deleteUser,
   getMyProfile,
+  updateMyProfile,
   previewBulkUpload,
   confirmBulkUpload,
   createUser,

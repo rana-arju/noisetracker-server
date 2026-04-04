@@ -31,16 +31,13 @@ const getAllUsersFromDB = async (filters: any, options: IPaginationOptions) => {
     andConditions.push({ status: status as UserStatus });
   }
 
-  const whereConditions: Prisma.UserWhereInput =
-    andConditions.length > 0 ? { AND: andConditions } : {};
+  const whereConditions: Prisma.UserWhereInput = andConditions.length > 0 ? { AND: andConditions } : {};
 
   const result = await prisma.user.findMany({
     where: whereConditions,
     skip,
     take: limit,
-    orderBy: options.sortBy && options.sortOrder
-      ? { [options.sortBy]: options.sortOrder }
-      : { createdAt: 'desc' },
+    orderBy: options.sortBy && options.sortOrder ? { [options.sortBy]: options.sortOrder } : { createdAt: 'desc' },
     select: {
       id: true,
       employeeId: true,
@@ -74,6 +71,8 @@ const getAllUsersFromDB = async (filters: any, options: IPaginationOptions) => {
 };
 
 const getSingleUserFromDB = async (id: string) => {
+  console.log('Fetching single user...');
+
   const user = await prisma.user.findUnique({
     where: { id },
     select: {
@@ -99,6 +98,8 @@ const getSingleUserFromDB = async (id: string) => {
 };
 
 const updateUserInfoIntoDB = async (id: string, payload: any) => {
+  console.log('update user');
+
   const existingUser = await prisma.user.findUnique({
     where: { id },
   });
@@ -143,6 +144,8 @@ const deleteUserFromDB = async (id: string) => {
 };
 
 const getMyProfileFromDB = async (userId: string) => {
+  console.log('my profile');
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -179,10 +182,7 @@ const createUserInDB = async (payload: any) => {
 
   // Set default password as employeeId if not provided
   const password = payload.password || payload.employeeId;
-  const hashedPassword = await bcrypt.hash(
-    password,
-    Number(config.bcrypt_salt_rounds)
-  );
+  const hashedPassword = await bcrypt.hash(password, Number(config.bcrypt_salt_rounds));
 
   const result = await prisma.user.create({
     data: {
@@ -203,7 +203,7 @@ const createUserInDB = async (payload: any) => {
     },
   });
 
-  return {...result, password: payload.password};
+  return { ...result, password: payload.password };
 };
 
 // Public search — returns minimal info for all authenticated users
@@ -234,6 +234,33 @@ const searchUsersFromDB = async (search: string) => {
   return result;
 };
 
+const updateMyProfileFromDB = async (userId: string, payload: any) => {
+  const { password, ...otherData } = payload;
+  const updateData: any = { ...otherData };
+
+  if (password) {
+    updateData.password = await bcrypt.hash(password, Number(config.bcrypt_salt_rounds));
+  }
+
+  const result = await prisma.user.update({
+    where: { id: userId },
+    data: updateData,
+    select: {
+      id: true,
+      employeeId: true,
+      name: true,
+      email: true,
+      phone: true,
+      role: true,
+      status: true,
+      isActive: true,
+      ...((Prisma as any).UserScalarFieldEnum.designation ? { designation: true } : {}),
+    },
+  });
+
+  return result;
+};
+
 export const UsersService = {
   getAllUsersFromDB,
   getSingleUserFromDB,
@@ -242,4 +269,5 @@ export const UsersService = {
   getMyProfileFromDB,
   createUserInDB,
   searchUsersFromDB,
+  updateMyProfileFromDB,
 };
